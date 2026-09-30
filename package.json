@@ -1,0 +1,8 @@
+{
+  "name": "dragon-keep-pinball",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A mobile-first WebGL fantasy pinball table",
+  "scripts": { "start": "python3 -m http.server 8080", "test": "node tests/physics.test.js" }
+}

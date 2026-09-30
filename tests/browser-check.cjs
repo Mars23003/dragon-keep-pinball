@@ -1,0 +1,30 @@
+const {chromium}=process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright'):require('playwright');
+const path=require('path');
+(async()=>{
+  const browser=await chromium.launch({...(process.env.PINBALL_CHROMIUM_PATH?{executablePath:process.env.PINBALL_CHROMIUM_PATH}:{}),headless:true,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+  const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+  await page.goto('http://127.0.0.1:8080/?debug=1');await page.waitForFunction(()=>window.__pinball?.view);
+  await page.screenshot({path:path.resolve('../pinball-intro.png')});
+  await page.locator('#primary').click();await page.waitForTimeout(150);
+  await page.screenshot({path:path.resolve('../pinball-mobile.png')});
+  await page.locator('#launch').dispatchEvent('pointerdown',{pointerId:1,pointerType:'touch'});await page.waitForTimeout(850);await page.locator('#launch').dispatchEvent('pointerup',{pointerId:1,pointerType:'touch'});
+  await page.waitForTimeout(2600);
+  await page.screenshot({path:path.resolve('../pinball-playing.png')});
+  const assert=require('node:assert/strict');
+  const cdp=await page.context().newCDPSession(page);
+  const bounds=await page.evaluate(()=>{const l=document.querySelector('#left').getBoundingClientRect(),r=document.querySelector('#right').getBoundingClientRect();return {left:{x:l.x+l.width/2,y:l.y+l.height/2,id:10},right:{x:r.x+r.width/2,y:r.y+r.height/2,id:11}}});
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[bounds.left,bounds.right]});
+  assert.deepEqual(await page.evaluate(()=>__pinball.engine.inputs),{left:true,right:true});
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
+  assert.deepEqual(await page.evaluate(()=>__pinball.engine.inputs),{left:false,right:false});
+  await page.locator('#pause').click();const stopped=await page.evaluate(()=>__pinball.engine.time);await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>__pinball.engine.time),stopped);
+  await page.locator('#primary').click();assert.equal(await page.evaluate(()=>__pinball.engine.state),'playing');
+  await page.locator('#help').click();assert.equal(await page.evaluate(()=>__pinball.engine.state),'paused');await page.locator('#primary').click();
+  const sizes=[{width:320,height:568},{width:375,height:667},{width:430,height:932},{width:1280,height:900},{width:844,height:390}];
+  for(const size of sizes){await page.setViewportSize(size);await page.waitForTimeout(120);const bounds=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,bottom:document.querySelector('#right').getBoundingClientRect().bottom,height:innerHeight,canvas:document.querySelector('#table').getBoundingClientRect().height}));assert.equal(bounds.overflow,false);assert.ok(bounds.bottom<=bounds.height);assert.ok(bounds.canvas>100);await page.screenshot({path:path.resolve(`../pinball-${size.width}x${size.height}.png`)});}
+  await page.evaluate(()=>{const e=__pinball.engine;e.saveUntil=0;e.time=100;while(e.lives>0)e.lose(e.balls[0]);});assert.equal(await page.evaluate(()=>__pinball.engine.state),'over');assert.equal(await page.locator('#overlay').getAttribute('class'),'overlay');
+  const best=await page.evaluate(()=>Number(localStorage.getItem('dragonkeep.best')));assert.ok(best>0);await page.reload();await page.waitForFunction(()=>window.__pinball?.view);assert.equal(Number((await page.locator('#best').textContent()).replace(/,/g,'')),best);
+  console.log(JSON.stringify({errors,checks:['WebGL render','skill-shot launch','dual touch and cancel','pause freeze','help resume','5 viewport layouts','game-over result','best-score persistence']}));
+  await browser.close();if(errors.length)process.exitCode=1;
+})().catch(e=>{console.error(e);process.exit(1)});

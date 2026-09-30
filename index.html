@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <meta name="theme-color" content="#101a23">
+  <meta name="description" content="在魔法城堡中挑戰高分。手機直向 3D 彈珠台：喚醒巨龍、完成考驗、開啟寶庫三球模式。">
+  <title>龍堡彈珠台 · Dragon Keep</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main id="app">
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="龍堡彈珠台首頁"><span class="crest">♜</span><span>龍堡<span class="brand-sub">DRAGON KEEP</span></span></a>
+    <div class="top-actions"><button id="sound" class="icon-btn" aria-label="關閉音效" title="音效">♫</button><button id="help" class="icon-btn" aria-label="遊戲說明" title="遊戲說明">?</button><button id="pause" class="icon-btn" aria-label="暫停遊戲" title="暫停">Ⅱ</button></div>
+  </header>
+  <section class="scoreboard" aria-label="計分板">
+    <div><span class="eyebrow">SCORE · 得分</span><strong id="score">000,000</strong></div>
+    <div class="record"><span class="eyebrow">個人最佳</span><span id="best">0</span><div class="ball-status"><span id="balls">● ● ●</span><span id="multiplier">×1</span></div></div>
+  </section>
+  <section class="arena" id="arena" aria-label="3D 彈珠台">
+    <canvas id="table" aria-label="龍堡彈珠台 3D 遊戲畫面"></canvas>
+    <div class="table-heading"><span>THE SLEEPING DRAGON</span><span class="ornament">✦</span></div>
+    <div class="quest-strip"><span id="quest-icon">◇</span><span id="quest">擊中左右盾牌 · 開啟城門</span><span id="quest-progress">0 / 2</span></div>
+    <div id="toast" class="toast" role="status"></div>
+    <div class="table-bottom"><span id="mode">龍堡甦醒</span><span id="save">準備發射</span></div>
+    <div id="charge" class="charge"><div id="charge-fill"></div></div>
+    <div id="loading" class="loading">正在點亮城堡…</div>
+  </section>
+  <section class="controls" aria-label="遊戲操作">
+    <button class="flipper-btn" id="left" aria-label="左擋板"><span class="control-icon">↗</span><span>左擋板<small>A / ←</small></span></button>
+    <button class="launch-btn" id="launch" aria-label="長按蓄力發射"><span id="launch-symbol">↑</span><span id="launch-text">長按發射</span></button>
+    <button class="flipper-btn" id="right" aria-label="右擋板"><span>右擋板<small>D / →</small></span><span class="control-icon">↖</span></button>
+  </section>
+  <footer>銀球入城 · 喚醒巨龍 · 開啟寶庫</footer>
+</main>
+<div id="overlay" class="overlay">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-crest">♜</div><span class="eyebrow" id="modal-kicker">A FANTASY PINBALL ADVENTURE</span>
+    <h1 id="modal-title">龍堡彈珠台</h1><p id="modal-subtitle">一顆銀球，一座甦醒的城堡。</p>
+    <div id="modal-content">
+      <div class="intro-route"><span>開城門</span><i>→</i><span>喚醒龍</span><i>→</i><span>奪寶庫</span></div>
+      <p class="instruction">長按中央按鈕蓄力，放開發射。<br>左右拇指控制擋板，守住每一顆球。</p>
+      <div class="game-meta"><span>3 顆球</span><span>技巧連擊</span><span>三球模式</span></div>
+    </div>
+    <button id="primary" class="primary-btn">進入城堡 <span>→</span></button>
+    <button id="secondary" class="secondary-btn" hidden>返回遊戲</button>
+    <p class="modal-foot">耳機與雙拇指，準備好了嗎？</p>
+  </section>
+</div>
+<script type="module" src="./game.js"></script>
+</body>
+</html>
